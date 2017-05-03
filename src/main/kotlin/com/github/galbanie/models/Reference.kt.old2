@@ -1,0 +1,67 @@
+package io.galbanie.model
+
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleStringProperty
+import tornadofx.*
+import javax.json.JsonObject
+
+/**
+ * Created by Galbanie on 2017-04-15.
+ */
+
+class Reference : JsonModel{
+
+    val make = SimpleStringProperty()
+    val model = SimpleStringProperty()
+    val year = SimpleIntegerProperty()
+    val chassiscode = SimpleStringProperty()
+    val chassisdesc = SimpleStringProperty()
+    val engineliter = SimpleStringProperty()
+    val aspiration = SimpleStringProperty()
+    val drivetype = SimpleStringProperty()
+    val numdoor = SimpleStringProperty()
+    val bodytype = SimpleStringProperty()
+    val fueltype = SimpleStringProperty()
+    val submodel = SimpleStringProperty()
+    val enginecode = SimpleStringProperty()
+    val comment = SimpleStringProperty()
+
+    // Convert properties of a javax.json.JsonObject to properties of our domain object
+    override fun updateModel(json: JsonObject) {
+        make.value = json.string("make")
+        model.value = json.string("model")
+        year.value = json.int("year")
+        chassiscode.value = json.string("chassiscode")
+        chassisdesc.value = json.string("chassisdesc")
+        engineliter.value = json.string("engineliter")
+        aspiration.value = json.string("aspiration")
+        drivetype.value = json.string("drivetype")
+        numdoor.value = json.string("numdoor")
+        bodytype.value = json.string("bodytype")
+        fueltype.value = json.string("fueltype")
+        submodel.value = json.string("submodel")
+        enginecode.value = json.string("enginecode")
+        comment.value = json.string("comment")
+    }
+
+    // Convert our domain object to JSON, typically used for POST and PUT operations by the Rest API
+    override fun toJSON(json: JsonBuilder) {
+        with (json) {
+            add("make",make)
+            add("model",model)
+            add("year",year)
+            add("chassiscode",chassiscode)
+            add("chassisdesc",chassisdesc)
+            add("engineliter",engineliter)
+            add("aspiration",aspiration)
+            add("drivetype",drivetype)
+            add("numdoor",numdoor)
+            add("bodytype",bodytype)
+            add("fueltype",fueltype)
+            add("submodel",submodel)
+            add("enginecode",enginecode)
+            add("comment",comment)
+        }
+    }
+
+}
