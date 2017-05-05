@@ -23,11 +23,13 @@ class HeaderRefView : View() {
     val make = scope.modelview.bind { SimpleStringProperty() }
     val model = scope.modelview.bind { SimpleStringProperty() }
     val year = scope.modelview.bind { SimpleStringProperty() }
+    val liter = scope.modelview.bind { SimpleStringProperty() }
     val chassiscode = scope.modelview.bind { SimpleStringProperty() }
 
     lateinit var makecombobox : ComboBox<String>
     lateinit var modelcombobox : ComboBox<String>
     lateinit var yearcombobox : ComboBox<String>
+    lateinit var litercombobox : ComboBox<String>
     lateinit var chassiscombobox : ComboBox<String>
 
     override val root = vbox {
@@ -50,6 +52,7 @@ class HeaderRefView : View() {
                         setOnAction {
                             yearcombobox.selectionModel.selectFirst()
                             modelcombobox.selectionModel.selectFirst()
+                            litercombobox.selectionModel.selectFirst()
                             chassiscombobox.selectionModel.selectFirst()
                             refctrl.loadModel(selectedItem!!)
                             // load async Reference by make
@@ -75,11 +78,23 @@ class HeaderRefView : View() {
                         items = refctrl.years
                         selectionModel.selectFirst()
                         setOnAction {
+                            litercombobox.selectionModel.selectFirst()
                             chassiscombobox.selectionModel.selectFirst()
-                            refctrl.loadChassisCode(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, selectedItem!!)
+                            refctrl.loadLiter(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, selectedItem!!)
                             // load async Reference by make, model and year
                             if (!selectedItem.equals(refctrl.years.first())) refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, selectedItem!!) }
                             else refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!) }
+                        }
+                    }
+
+                    litercombobox = combobox(liter) {
+                        items = refctrl.liters
+                        selectionModel.selectFirst()
+                        setOnAction {
+                            chassiscombobox.selectionModel.selectFirst()
+                            refctrl.loadChassisCode(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, yearcombobox.selectedItem!!, selectedItem!!)
+                            if (!selectedItem.equals(refctrl.liters.first())) refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, yearcombobox.selectedItem!!, selectedItem!!) }
+                            else refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, yearcombobox.selectedItem!!) }
                         }
                     }
 
@@ -87,10 +102,8 @@ class HeaderRefView : View() {
                         items = refctrl.chassisCodes
                         selectionModel.selectFirst()
                         setOnAction {
-                            // load async Reference by make, model, year and chassis code
-
-                            if (!selectedItem.equals(refctrl.chassisCodes.first())) refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, yearcombobox.selectedItem!!, selectedItem!!) }
-                            else refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, yearcombobox.selectedItem!!) }
+                            if (!selectedItem.equals(refctrl.chassisCodes.first())) refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, yearcombobox.selectedItem!!, litercombobox.selectedItem!!,selectedItem!!) }
+                            else refctrl.loadSync { refctrl.loadReferenceBy(makecombobox.selectedItem!!, modelcombobox.selectedItem!!, yearcombobox.selectedItem!!, litercombobox.selectedItem!!) }
                         }
                     }
 
@@ -99,6 +112,7 @@ class HeaderRefView : View() {
                             makecombobox.selectionModel.selectFirst()
                             modelcombobox.selectionModel.selectFirst()
                             yearcombobox.selectionModel.selectFirst()
+                            litercombobox.selectionModel.selectFirst()
                             chassiscombobox.selectionModel.selectFirst()
                             refctrl.loadSync { refctrl.loadAllReference() }
                         }

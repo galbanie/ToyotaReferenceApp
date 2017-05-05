@@ -25,6 +25,7 @@ class ReferenceController : Controller(){
     val makes = FXCollections.observableArrayList<String>("(Select Make)")
     val models = FXCollections.observableArrayList<String>("(Select Model)")
     val years = FXCollections.observableArrayList<String>("(Select Year)")
+    val liters = FXCollections.observableArrayList<String>("(Select Liter)")
     val chassisCodes = FXCollections.observableArrayList<String>("(Select Code)")
 
     val referenceStatement = (
@@ -61,8 +62,6 @@ class ReferenceController : Controller(){
             Comments.comment
     )
 
-    //val referenceStatementByMake = referenceStatement.select{Makes.name.eq(make) }
-
     init {
         scope.db
         //loadAsync { loadAllReference() }
@@ -76,13 +75,13 @@ class ReferenceController : Controller(){
     }
 
     fun loadModel(make : String){
-
         models.setAll(models.first())
         transaction {
             (References innerJoin Makes innerJoin Models).slice(Models.name).select {Makes.name.eq(make)}.withDistinct().orderBy(Models.name, true).forEach {
                 models.add(it[Models.name])
             }
         }
+        models.setAll(models.distinct())
     }
 
     fun loadYear(make : String, model : String){
@@ -92,15 +91,27 @@ class ReferenceController : Controller(){
                 years.add(it[Years.year])
             }
         }
+        years.setAll(years.distinct())
     }
 
-    fun loadChassisCode(make : String, model : String, year : String){
+    fun loadLiter(make: String, model: String, year: String){
+        liters.setAll(liters.first())
+        transaction {
+            (References innerJoin Makes innerJoin Models innerJoin Years innerJoin EngineLiters).select {Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year)}.withDistinct().orderBy(EngineLiters.liter, true).forEach {
+                liters.add(it[EngineLiters.liter])
+            }
+        }
+        liters.setAll(liters.distinct())
+    }
+
+    fun loadChassisCode(make : String, model : String, year : String, liter : String){
         chassisCodes.setAll(chassisCodes.first())
         transaction {
-            (References innerJoin Makes innerJoin Models innerJoin Years innerJoin Chassis).select {Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year)}.withDistinct().orderBy(Chassis.code, true).forEach {
+            (References innerJoin Makes innerJoin Models innerJoin Years innerJoin EngineLiters innerJoin Chassis).select {Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year) and EngineLiters.liter.eq(liter)}.withDistinct().orderBy(Chassis.code, true).forEach {
                 chassisCodes.add(it[Chassis.code])
             }
         }
+        chassisCodes.setAll(chassisCodes.distinct())
     }
 
     fun loadAllReference() : List<Reference>{
@@ -117,15 +128,18 @@ class ReferenceController : Controller(){
         return refs
     }
 
-    fun loadReferenceBy(make : String, model : String? = null, year : String? = null, chassisCode : String? = null) : List<Reference>{
+    fun loadReferenceBy(make : String, model : String? = null, year : String? = null,liter : String? = null, chassisCode : String? = null) : List<Reference>{
         val refs = arrayListOf<Reference>()
         transaction {
             var statement = referenceStatement.select{Makes.name.eq(make)}
             if(model != null){
                 if (year != null){
-                    if(chassisCode != null){
-                        statement = referenceStatement.select{Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year) and Chassis.code.eq(chassisCode)}
-                    }else statement = referenceStatement.select{Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year) }
+                    if(liter != null){
+                        if(chassisCode != null){
+                            statement = referenceStatement.select{Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year) and EngineLiters.liter.eq(liter) and Chassis.code.eq(chassisCode)}
+                        }else statement = referenceStatement.select{Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year) and EngineLiters.liter.eq(liter) }
+                    }
+                    else statement = referenceStatement.select{Makes.name.eq(make) and Models.name.eq(model) and Years.year.eq(year) }
                 }else statement = referenceStatement.select{Makes.name.eq(make) and Models.name.eq(model)}
             }
             statement.forEach {
